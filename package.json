@@ -1,0 +1,29 @@
+{
+  "name": "plataforma-de-control-y-certificaci-n-de-ausencias-cl-nicas-uss",
+  "version": "1.0.0",
+  "description": "Demo del sistema de justificación de inasistencias para estudiantes de Odontología USS. Permitirá registrar solicitudes asociadas a cursos y actividades clínicas, adjuntar respaldos, validar plazos y notificar a docentes y administradores. Se integrará al Portafolio Digital de Odontología.",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ElJh00natso/Plataforma-de-Control-y-Certificaci-n-de-Ausencias-Cl-nicas-USS.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ElJh00natso/Plataforma-de-Control-y-Certificaci-n-de-Ausencias-Cl-nicas-USS/issues"
+  },
+  "homepage": "https://github.com/ElJh00natso/Plataforma-de-Control-y-Certificaci-n-de-Ausencias-Cl-nicas-USS#readme",
+  "dependencies": {
+    "@tailwindcss/postcss": "^4.3.5",
+    "next": "^16.4.6",
+    "postcss": "^8.5.33",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "tailwindcss": "^4.3.5"
+  }
+}
