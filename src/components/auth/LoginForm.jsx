@@ -1,12 +1,15 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
+  const router = useRouter();
 
   function handleSubmit(event) {
     event.preventDefault();
+    router.push("/Estudiante");
   }
 
   return (
