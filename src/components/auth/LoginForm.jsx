@@ -5,11 +5,39 @@ import { useRouter } from "next/navigation";
 
 export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
+  const [rut, setRut] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
-    router.push("/Estudiante");
+    if (isSubmitting) return;
+
+    setError("");
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch("/api/usuario/autenticacion", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ rut, password }),
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.message ?? "No fue posible validar las credenciales.");
+        return;
+      }
+
+      // La redirección por rol se implementará cuando exista sesión real.
+      router.push("/Estudiante");
+    } catch {
+      setError("No fue posible conectar con el servicio de autenticación.");
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -29,8 +57,11 @@ export default function LoginForm() {
             className="h-12 w-full rounded-xl border border-slate-200 bg-[#f4f7fb] pl-12 pr-4 text-sm font-medium text-slate-800 outline-none transition placeholder:font-normal placeholder:text-slate-400 focus:border-[#091581] focus:ring-4 focus:ring-[#e8eef8]"
             id="rut"
             name="rut"
+            onChange={(event) => setRut(event.target.value)}
             placeholder="12.345.678-9"
+            required
             type="text"
+            value={rut}
           />
         </div>
       </div>
@@ -50,8 +81,11 @@ export default function LoginForm() {
             className="h-12 w-full rounded-xl border border-slate-200 bg-[#f4f7fb] pl-12 pr-12 text-sm font-medium text-slate-800 outline-none transition placeholder:font-normal placeholder:text-slate-400 focus:border-[#091581] focus:ring-4 focus:ring-[#e8eef8]"
             id="password"
             name="password"
+            onChange={(event) => setPassword(event.target.value)}
             placeholder="Ingresa tu contraseña"
+            required
             type={showPassword ? "text" : "password"}
+            value={password}
           />
           <button
             aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
@@ -73,18 +107,18 @@ export default function LoginForm() {
         </div>
       </div>
 
+      {error && <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">{error}</p>}
+
       <button
-        className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#091581] px-4 py-3.5 text-[15px] font-bold text-white shadow-lg shadow-[#091581]/15 transition hover:bg-[#060e5e] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#091581] active:scale-[0.99]"
+        className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#091581] px-4 py-3.5 text-[15px] font-bold text-white shadow-lg shadow-[#091581]/15 transition hover:bg-[#060e5e] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#091581] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
+        disabled={isSubmitting}
         type="submit"
       >
-        Ingresar
-        <svg aria-hidden="true" className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 12h14m-6-6 6 6-6 6" />
-        </svg>
+        {isSubmitting ? "Validando…" : "Ingresar"}
       </button>
 
       <p className="text-center text-xs leading-5 text-slate-500">
-        Demo visual: el acceso aún no procesa credenciales.
+        Acceso temporal de demostración.
       </p>
     </form>
   );

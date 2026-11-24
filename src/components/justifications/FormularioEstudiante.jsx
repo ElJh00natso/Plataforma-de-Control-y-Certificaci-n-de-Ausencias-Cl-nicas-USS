@@ -1,6 +1,63 @@
 "use client";
 
+import { useState } from "react";
+
+const MEGABYTE = 1024 * 1024;
+const allowedCertificateExtensions = ["pdf", "ppt", "pptx", "jpg", "jpeg", "png", "webp"];
+const allowedReceiptExtensions = ["pdf", "jpg", "jpeg", "png", "webp"];
+
+function getExtension(fileName) {
+  return fileName.split(".").pop()?.toLowerCase() ?? "";
+}
+
+function formatFileSize(bytes) {
+  return `${(bytes / MEGABYTE).toFixed(bytes >= 10 * MEGABYTE ? 0 : 1)} MB`;
+}
+
+function DocumentIcon() {
+  return (
+    <svg aria-hidden="true" className="h-7 w-7 text-[#091581]" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2-2V8Z" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M14 2v6h6M8 13h8M8 17h5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function UploadIcon() {
+  return (
+    <svg aria-hidden="true" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+      <path d="M12 16V4m0 0L7 9m5-5 5 5M5 20h14" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 export default function FormularioEstudiante({ onClose }) {
+  const [certificate, setCertificate] = useState(null);
+  const [receipt, setReceipt] = useState(null);
+  const [errors, setErrors] = useState({});
+
+  function selectFile(event, field, maxSize, allowedExtensions) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const extension = getExtension(file.name);
+    if (!allowedExtensions.includes(extension)) {
+      setErrors((current) => ({ ...current, [field]: "El tipo de archivo seleccionado no está permitido." }));
+      event.target.value = "";
+      return;
+    }
+
+    if (file.size > maxSize) {
+      setErrors((current) => ({ ...current, [field]: `El archivo supera el límite de ${formatFileSize(maxSize)}.` }));
+      event.target.value = "";
+      return;
+    }
+
+    setErrors((current) => ({ ...current, [field]: undefined }));
+    if (field === "certificate") setCertificate(file);
+    if (field === "receipt") setReceipt(file);
+  }
+
   function handleSubmit(event) {
     event.preventDefault();
   }
@@ -11,7 +68,7 @@ export default function FormularioEstudiante({ onClose }) {
         <header className="flex shrink-0 items-center justify-between gap-4 border-b border-slate-200 bg-white px-5 py-4 sm:px-7">
           <div>
             <p className="text-sm font-bold uppercase tracking-wider text-[#091581]">Justificaciones clínicas · Odontología USS</p>
-            <h2 className="mt-1 text-xl font-bold text-slate-800" id="student-form-title">Nueva justificación</h2>
+            <h2 className="mt-1 text-xl font-bold text-slate-800" id="student-form-title">Documentos de justificación</h2>
           </div>
           <button aria-label="Cerrar formulario" className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-slate-200 text-[#091581] transition hover:bg-[#e8eef8]" onClick={onClose} type="button">
             <svg aria-hidden="true" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -21,30 +78,61 @@ export default function FormularioEstudiante({ onClose }) {
         </header>
 
         <form className="min-h-0 flex-1 space-y-6 overflow-y-auto p-5 sm:p-7" onSubmit={handleSubmit}>
-          <section className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
-            <h3 className="border-b border-slate-100 pb-3 text-base font-bold text-[#091581]">Datos del estudiante</h3>
-            <div className="mt-5 grid gap-5 sm:grid-cols-2">
+          <section className="rounded-2xl border border-blue-100 bg-blue-50 p-5 sm:p-6">
+            <div className="flex items-start gap-3">
+              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-white shadow-sm"><DocumentIcon /></span>
               <div>
-                <label className="mb-2 block text-sm font-semibold text-slate-700" htmlFor="student-name">Nombre</label>
-                <input className="w-full rounded-xl border border-slate-200 bg-white px-3 py-3 text-base text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-[#091581] focus:ring-2 focus:ring-[#091581]/15" id="student-name" name="student-name" placeholder="Ingresa tu nombre" type="text" />
-              </div>
-              <div>
-                <label className="mb-2 block text-sm font-semibold text-slate-700" htmlFor="student-lastname">Apellido</label>
-                <input className="w-full rounded-xl border border-slate-200 bg-white px-3 py-3 text-base text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-[#091581] focus:ring-2 focus:ring-[#091581]/15" id="student-lastname" name="student-lastname" placeholder="Ingresa tu apellido" type="text" />
+                <h3 className="text-lg font-bold text-[#091581]">Documentos de justificación</h3>
+                <p className="mt-2 text-sm leading-6 text-slate-700">A continuación, agrega los documentos que respalden tu inasistencia.</p>
               </div>
             </div>
+            <ul className="mt-5 space-y-2 border-t border-blue-100 pt-5 text-sm leading-6 text-slate-700">
+              <li>• Solo se aceptarán certificados médicos, licencias médicas y/o justificaciones emitidas por tribunales de justicia.</li>
+              <li>• El documento debe indicar explícitamente el nombre y RUT del alumno, la causa y el período de justificación.</li>
+              <li>• Debe incluir la firma y timbre de quien suscribe el documento.</li>
+              <li>• La fotografía o escaneo debe corresponder al documento original, a color. No se aceptarán fotocopias.</li>
+            </ul>
           </section>
 
-          <p className="rounded-xl bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-600">
-            Este es un primer prototipo visual. Aquí se incorporarán los campos de la justificación de inasistencia.
-          </p>
+          <section className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
+            <label className="text-base font-bold leading-6 text-slate-800" htmlFor="medical-certificate">
+              8. Adjunte certificado médico y/o licencia médica
+            </label>
+            <p className="mt-1 text-sm text-slate-500">Máximo un archivo.</p>
+            <label className="mt-4 flex cursor-pointer items-center justify-center gap-2 rounded-xl border-2 border-dashed border-blue-200 bg-blue-50 px-4 py-4 text-sm font-semibold text-[#091581] transition hover:border-[#091581] hover:bg-blue-100" htmlFor="medical-certificate">
+              <UploadIcon />
+              Cargar archivo
+            </label>
+            <input accept=".pdf,.ppt,.pptx,image/*" className="sr-only" id="medical-certificate" onChange={(event) => selectFile(event, "certificate", 100 * MEGABYTE, allowedCertificateExtensions)} type="file" />
+            {certificate && <p className="mt-3 rounded-lg bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-800">Archivo seleccionado: {certificate.name}</p>}
+            {errors.certificate && <p className="mt-3 text-sm font-medium text-red-600" role="alert">{errors.certificate}</p>}
+            <p className="mt-3 text-xs leading-5 text-slate-500">Límite: 1 archivo · Tamaño máximo: 100 MB · Formatos permitidos: PPT, PDF e imagen.</p>
+          </section>
 
-          <div className="flex flex-wrap justify-end gap-3 border-t border-slate-100 pt-5">
+          <section className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
+            <label className="text-base font-bold leading-6 text-slate-800" htmlFor="attention-receipt">
+              9. Adjunte boleta o bono de atención
+            </label>
+            <p className="mt-1 text-sm text-slate-500">La boleta es válida para los días 5 y 7.</p>
+            <label className="mt-4 flex cursor-pointer items-center justify-center gap-2 rounded-xl border-2 border-dashed border-blue-200 bg-blue-50 px-4 py-4 text-sm font-semibold text-[#091581] transition hover:border-[#091581] hover:bg-blue-100" htmlFor="attention-receipt">
+              <UploadIcon />
+              Cargar archivo
+            </label>
+            <input accept=".pdf,image/*" className="sr-only" id="attention-receipt" onChange={(event) => selectFile(event, "receipt", 10 * MEGABYTE, allowedReceiptExtensions)} type="file" />
+            {receipt && <p className="mt-3 rounded-lg bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-800">Archivo seleccionado: {receipt.name}</p>}
+            {errors.receipt && <p className="mt-3 text-sm font-medium text-red-600" role="alert">{errors.receipt}</p>}
+            <p className="mt-3 text-xs leading-5 text-slate-500">Límite: 1 archivo · Tamaño máximo: 10 MB · Formatos permitidos: PDF e imagen.</p>
+          </section>
+
+          <section className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
+            <label className="text-base font-bold text-slate-800" htmlFor="additional-details">Antecedentes adicionales</label>
+            <p className="mt-1 text-sm text-slate-500">Si lo necesitas, agrega información complementaria para evaluar tu solicitud.</p>
+            <textarea className="mt-4 min-h-32 w-full resize-y rounded-xl border border-slate-200 px-3 py-3 text-base text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-[#091581] focus:ring-2 focus:ring-[#091581]/15" id="additional-details" name="additional-details" placeholder="Escribe aquí información adicional…" />
+          </section>
+
+          <div className="flex justify-end border-t border-slate-100 pt-5">
             <button className="rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-100" onClick={onClose} type="button">
               Cancelar
-            </button>
-            <button className="rounded-xl bg-[#091581] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#060e5e]" type="submit">
-              Continuar
             </button>
           </div>
         </form>
