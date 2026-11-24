@@ -71,7 +71,7 @@ export async function POST(request) {
     filePayload.append("content", "file");
     filePayload.append("action", "import");
     filePayload.append("record", RECORD_ID);
-    filePayload.append("field_name", "certificado");
+    filePayload.append("field", "certificado");
     filePayload.append("file", certificate, certificate.name);
     await redcapRequest(filePayload);
 
