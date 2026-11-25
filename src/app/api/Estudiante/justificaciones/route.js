@@ -39,6 +39,30 @@ async function redcapRequest(body) {
   }
 }
 
+// Retorna solo las solicitudes del estudiante autenticado, sin datos médicos de REDCap.
+export async function GET() {
+  const sesion = await getCurrentSession();
+  if (!sesion) return NextResponse.json({ message: "Debes iniciar sesión." }, { status: 401 });
+  // Pendiente: habilitar la comprobación de rol cuando se implementen los otros perfiles.
+  // if (sesion.role !== "estudiante") return NextResponse.json({ message: "Acceso disponible solo para estudiantes." }, { status: 403 });
+
+  try {
+    const justificaciones = await prisma.justificacion.findMany({
+      where: { estudiante_id: sesion.usuario_id },
+      orderBy: [{ fecha: "desc" }, { justificacion_id: "desc" }],
+      select: {
+        justificacion_id: true, fecha: true, estado: true, respuesta: true,
+        horario: { select: { dia: true, hora_inicio: true, hora_termino: true,
+          curso: { select: { nombre_curso: true, nrc: true } } } },
+      },
+    });
+    return NextResponse.json({ justificaciones }, { headers: { "Cache-Control": "private, no-store" } });
+  } catch (error) {
+    console.error("Error al consultar justificaciones:", error);
+    return NextResponse.json({ message: "No fue posible consultar tus justificaciones." }, { status: 500 });
+  }
+}
+
 // Recibe los datos del formulario de justificación del estudiante.
 export async function POST(request) {
   // La cookie se verifica en el servidor: firma con SESSION_SECRET y vencimiento.
@@ -165,7 +189,17 @@ export async function POST(request) {
     filePayload.append("file", certificate, certificate.name);
     await redcapRequest(filePayload);
 
-    return NextResponse.json({ message: "Justificación enviada correctamente a REDCap.", recordId });
+    // El registro local permite consultar el estado sin almacenar los antecedentes médicos.
+    try {
+      const justificacion = await prisma.justificacion.create({
+        data: { estudiante_id: sesion.usuario_id, horario_id: horarioId, record_id: recordId, estado: "en_revision" },
+        select: { justificacion_id: true },
+      });
+      return NextResponse.json({ message: "Justificación enviada correctamente.", justificacionId: justificacion.justificacion_id });
+    } catch (error) {
+      console.error("No se pudo guardar la justificación local:", error);
+      return NextResponse.json({ message: `El documento se envió a REDCap (registro ${recordId}), pero no se pudo guardar en el historial. Contacta al administrador antes de reenviar.`, recordId }, { status: 502 });
+    }
   } catch (error) {
     console.error("Error al enviar la justificación a REDCap:", error);
     if (recordId) {

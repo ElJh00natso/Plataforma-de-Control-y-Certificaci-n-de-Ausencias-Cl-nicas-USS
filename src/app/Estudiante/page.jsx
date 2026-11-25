@@ -1,14 +1,10 @@
 import Link from "next/link";
 import TarjetaBienvenida from "../../components/shared/TarjetaBienvenida";
 import { getCurrentSession } from "../../lib/auth/currentSession";
+import ResumenJustificaciones from "../../components/justifications/ResumenJustificaciones";
 
 export default async function EstudiantePage() {
   const sesion = await getCurrentSession();
-  const summary = [
-    { label: "Aprobadas", value: 0, color: "bg-emerald-500" },
-    { label: "En revisión", value: 0, color: "bg-amber-500" },
-    { label: "Rechazadas", value: 0, color: "bg-red-500" },
-  ];
 
   return (
     <main className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-5 py-7 sm:px-7 sm:py-10">
@@ -38,24 +34,7 @@ export default async function EstudiantePage() {
             </div>
           </Link>
 
-          <article className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-7">
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#091581]">Resumen</p>
-            <h3 className="mt-1 text-lg font-bold text-slate-800">Tus justificaciones</h3>
-            <div aria-label="Gráfico de estados de justificaciones" className="mt-6 space-y-4" role="img">
-              {summary.map((item) => (
-                <div key={item.label}>
-                  <div className="flex items-center justify-between gap-3 text-sm">
-                    <span className="font-medium text-slate-600">{item.label}</span>
-                    <span className="font-bold text-slate-800">{item.value}</span>
-                  </div>
-                  <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-100">
-                    <div className={`h-full rounded-full ${item.color}`} style={{ width: `${item.value}%` }} />
-                  </div>
-                </div>
-              ))}
-            </div>
-            <p className="mt-6 text-sm leading-6 text-slate-500">Los estados se mostrarán cuando existan solicitudes registradas.</p>
-          </article>
+          <ResumenJustificaciones />
         </div>
       </section>
     </main>

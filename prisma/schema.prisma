@@ -81,6 +81,7 @@ model Justificacion {
   fecha            DateTime   @default(now()) @db.Timestamptz(3)
   estado           String
   record_id        String
+  respuesta        String?
   horario          Horario    @relation(fields: [horario_id], references: [horario_id])
   estudiante       Estudiante @relation(fields: [estudiante_id], references: [usuario_id])
 
