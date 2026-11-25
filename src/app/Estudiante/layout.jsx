@@ -4,6 +4,7 @@ const studentSections = [
   { title: "Inicio", href: "/Estudiante" },
   { title: "Realizar justificación", href: "/Estudiante/realizar-justificacion" },
   { title: "Mis justificaciones", href: "/Estudiante/historial" },
+  { title: "Justificaciones", href: "/Administrador/Justificaciones" },
 ];
 
 export default function StudentLayout({ children }) {

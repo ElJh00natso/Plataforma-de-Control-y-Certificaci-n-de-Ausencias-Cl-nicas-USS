@@ -31,8 +31,17 @@ export default function LoginForm() {
         return;
       }
 
-      // La redirección por rol se definirá en una siguiente etapa.
-      transicion.navegar({ destino: "/Estudiante", mensaje: "Cargando tu espacio…" });
+      const destinos = {
+        estudiante: "/Estudiante",
+        docente: "/Docente",
+        administrador: "/Administrador",
+      };
+      const destino = destinos[data.user?.role];
+      if (!destino) {
+        setError("No fue posible determinar el perfil de tu cuenta.");
+        return;
+      }
+      transicion.navegar({ destino, mensaje: "Cargando tu espacio…" });
     } catch {
       setError("No fue posible conectar con el servicio de autenticación.");
     } finally {

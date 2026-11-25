@@ -27,10 +27,11 @@ export function readSessionToken(token) {
   if (!encoded || !signature || extra !== undefined) return null;
 
   try {
-    // La firma detecta cambios en los datos antes de confiar en ellos.
+    // Recalculamos la firma HMAC con SESSION_SECRET y la comparamos antes de leer los datos.
     const expected = Buffer.from(sign(encoded));
     const received = Buffer.from(signature);
     if (expected.length !== received.length || !timingSafeEqual(expected, received)) return null;
+    // Solo después de verificar la firma comprobamos los campos y el vencimiento.
     const payload = JSON.parse(Buffer.from(encoded, "base64url").toString("utf8"));
     if (!payload || payload.version !== SESSION_VERSION || !Number.isSafeInteger(payload.usuario_id) || payload.usuario_id <= 0 ||
         !ROLES.includes(payload.role) || typeof payload.nombre !== "string" || typeof payload.apellido !== "string" ||
