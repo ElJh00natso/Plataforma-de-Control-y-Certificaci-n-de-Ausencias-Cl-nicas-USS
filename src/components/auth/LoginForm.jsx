@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useLoadingScreenTime } from "../shared/LoadingScreenTime";
 
 export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
@@ -9,11 +9,11 @@ export default function LoginForm() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const router = useRouter();
+  const transicion = useLoadingScreenTime();
 
   async function handleSubmit(event) {
     event.preventDefault();
-    if (isSubmitting) return;
+    if (isSubmitting || transicion.enCurso) return;
 
     setError("");
     setIsSubmitting(true);
@@ -31,8 +31,8 @@ export default function LoginForm() {
         return;
       }
 
-      // La redirección por rol se implementará cuando exista sesión real.
-      router.push("/Estudiante");
+      // La redirección por rol se definirá en una siguiente etapa.
+      transicion.navegar({ destino: "/Estudiante", mensaje: "Cargando tu espacio…" });
     } catch {
       setError("No fue posible conectar con el servicio de autenticación.");
     } finally {
@@ -111,7 +111,7 @@ export default function LoginForm() {
 
       <button
         className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#091581] px-4 py-3.5 text-[15px] font-bold text-white shadow-lg shadow-[#091581]/15 transition hover:bg-[#060e5e] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#091581] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
-        disabled={isSubmitting}
+        disabled={isSubmitting || transicion.enCurso}
         type="submit"
       >
         {isSubmitting ? "Validando…" : "Ingresar"}

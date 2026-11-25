@@ -1,0 +1,101 @@
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "esm"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Usuario {
+  usuario_id   Int                 @id @default(autoincrement())
+  rut          String              @unique
+  pass_hash    String
+  estudiante   Estudiante?
+  docente      Docente?
+  administrador Administrador?
+  suscripciones PushSuscription[]
+}
+
+model Estudiante {
+  usuario_id      Int                  @id
+  nombre          String
+  apellido        String
+  usuario         Usuario              @relation(fields: [usuario_id], references: [usuario_id])
+  cursos          CursoPorEstudiante[]
+  justificaciones Justificacion[]
+}
+
+model Docente {
+  usuario_id Int      @id
+  nombre     String
+  apellido   String
+  usuario    Usuario  @relation(fields: [usuario_id], references: [usuario_id])
+  cursos     Curso[]
+}
+
+model Administrador {
+  usuario_id Int     @id
+  nombre     String
+  apellido   String
+  usuario    Usuario @relation(fields: [usuario_id], references: [usuario_id])
+}
+
+model Curso {
+  curso_id    Int                  @id @default(autoincrement())
+  docente_id  Int
+  nombre_curso String
+  nrc         String
+  seccion     String?
+  docente     Docente              @relation(fields: [docente_id], references: [usuario_id])
+  estudiantes CursoPorEstudiante[]
+  horarios    Horario[]
+}
+
+model CursoPorEstudiante {
+  curso_estudiante_id Int        @id @default(autoincrement())
+  estudiante_id       Int
+  curso_id            Int
+  estudiante          Estudiante @relation(fields: [estudiante_id], references: [usuario_id])
+  curso               Curso      @relation(fields: [curso_id], references: [curso_id])
+
+  @@unique([estudiante_id, curso_id])
+  @@map("Curso_por_estudiante")
+}
+
+model Horario {
+  horario_id      Int             @id @default(autoincrement())
+  curso_id        Int
+  hora_inicio     DateTime        @db.Time(0)
+  hora_termino    DateTime        @db.Time(0)
+  dia             String
+  curso           Curso           @relation(fields: [curso_id], references: [curso_id])
+  justificaciones Justificacion[]
+}
+
+model Justificacion {
+  justificacion_id Int        @id @default(autoincrement())
+  horario_id       Int
+  estudiante_id    Int
+  fecha            DateTime   @default(now()) @db.Timestamptz(3)
+  estado           String
+  record_id        String
+  horario          Horario    @relation(fields: [horario_id], references: [horario_id])
+  estudiante       Estudiante @relation(fields: [estudiante_id], references: [usuario_id])
+
+  @@map("Justificaciones")
+}
+
+model PushSuscription {
+  push_id    Int      @id @default(autoincrement())
+  usuario_id Int
+  endpoint   String   @unique
+  p256dh     String
+  auth       String
+  activo     Boolean  @default(true)
+  fecha      DateTime @default(now()) @db.Timestamptz(3)
+  usuario    Usuario  @relation(fields: [usuario_id], references: [usuario_id])
+
+  @@map("push_suscription")
+}

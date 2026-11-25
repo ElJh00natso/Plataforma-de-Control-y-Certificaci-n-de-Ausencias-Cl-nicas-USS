@@ -4,6 +4,7 @@
   "description": "Demo del sistema de justificación de inasistencias para estudiantes de Odontología USS. Permitirá registrar solicitudes asociadas a cursos y actividades clínicas, adjuntar respaldos, validar plazos y notificar a docentes y administradores. Se integrará al Portafolio Digital de Odontología.",
   "scripts": {
     "dev": "next dev",
+    "postinstall": "prisma generate",
     "build": "next build",
     "start": "next start"
   },
@@ -19,11 +20,20 @@
   },
   "homepage": "https://github.com/ElJh00natso/Plataforma-de-Control-y-Certificaci-n-de-Ausencias-Cl-nicas-USS#readme",
   "dependencies": {
+    "@prisma/adapter-pg": "^7.10.1",
+    "@prisma/client": "^7.10.1",
     "@tailwindcss/postcss": "^4.3.5",
+    "bcryptjs": "^3.0.3",
+    "dotenv": "^18.0.10",
+    "file-type": "^22.3.0",
     "next": "^16.4.6",
+    "pg": "^8.23.1",
     "postcss": "^8.5.33",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "tailwindcss": "^4.3.5"
+  },
+  "devDependencies": {
+    "prisma": "^7.10.1"
   }
 }

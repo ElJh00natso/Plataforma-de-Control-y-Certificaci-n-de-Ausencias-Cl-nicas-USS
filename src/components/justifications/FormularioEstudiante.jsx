@@ -26,7 +26,7 @@ function UploadIcon() {
   );
 }
 
-export default function FormularioEstudiante({ onClose }) {
+export default function FormularioEstudiante({ actividad, onClose }) {
   const [certificate, setCertificate] = useState(null);
   const [additionalDetails, setAdditionalDetails] = useState("");
   const [error, setError] = useState("");
@@ -37,6 +37,8 @@ export default function FormularioEstudiante({ onClose }) {
     const file = event.target.files?.[0];
     if (!file) return;
 
+    setCertificate(null);
+    setSuccess("");
     const extension = getExtension(file.name);
     if (!allowedCertificateExtensions.includes(extension)) {
       setError("El tipo de archivo seleccionado no está permitido.");
@@ -44,8 +46,8 @@ export default function FormularioEstudiante({ onClose }) {
       return;
     }
 
-    if (file.size > 100 * MEGABYTE) {
-      setError("El archivo supera el límite de 100 MB.");
+    if (file.size > 10 * MEGABYTE) {
+      setError("El archivo supera el límite de 10 MB.");
       event.target.value = "";
       return;
     }
@@ -64,14 +66,20 @@ export default function FormularioEstudiante({ onClose }) {
       return;
     }
 
+    if (!Number.isSafeInteger(actividad?.horario_id) || actividad.horario_id <= 0) {
+      setError("Selecciona una actividad válida para justificar.");
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
       const formData = new FormData();
+      formData.append("horario_id", String(actividad.horario_id));
       formData.append("certificado", certificate);
       formData.append("comentarios", additionalDetails);
 
-      const response = await fetch("/api/justificaciones", { body: formData, method: "POST" });
+      const response = await fetch("/api/Estudiante/justificaciones", { body: formData, method: "POST" });
       const data = await response.json();
 
       if (!response.ok) throw new Error(data.message || "No fue posible enviar la justificación.");
@@ -100,6 +108,11 @@ export default function FormularioEstudiante({ onClose }) {
         </header>
 
         <form className="min-h-0 flex-1 space-y-6 overflow-y-auto p-5 sm:p-7" onSubmit={handleSubmit}>
+          <section className="rounded-2xl border border-blue-100 bg-blue-50 p-5">
+            <p className="text-sm font-bold text-[#091581]">Actividad seleccionada</p>
+            <p className="mt-1 font-semibold text-slate-800">{actividad.curso}</p>
+            <p className="mt-1 text-sm text-slate-600">NRC {actividad.nrc} · {actividad.horario}</p>
+          </section>
           <section className="rounded-2xl border border-blue-100 bg-blue-50 p-5 sm:p-6">
             <div className="flex items-start gap-3">
               <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-white shadow-sm"><DocumentIcon /></span>
@@ -123,15 +136,15 @@ export default function FormularioEstudiante({ onClose }) {
               <UploadIcon />
               Cargar archivo
             </label>
-            <input accept=".pdf,.ppt,.pptx,image/*" className="sr-only" id="medical-certificate" onChange={selectFile} type="file" />
+            <input accept=".pdf,.ppt,.pptx,.jpg,.jpeg,.png,.webp" className="sr-only" id="medical-certificate" onChange={selectFile} type="file" />
             {certificate && <p className="mt-3 rounded-lg bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-800">Archivo seleccionado: {certificate.name}</p>}
-            <p className="mt-3 text-xs leading-5 text-slate-500">Límite: 1 archivo · Tamaño máximo: 100 MB · Formatos permitidos: PPT, PDF e imagen.</p>
+            <p className="mt-3 text-xs leading-5 text-slate-500">Límite: 1 archivo · Tamaño máximo: 10 MB · Formatos permitidos: PPT, PPTX, PDF, JPG, PNG y WebP.</p>
           </section>
 
           <section className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
             <label className="text-base font-bold text-slate-800" htmlFor="additional-details">Antecedentes adicionales</label>
             <p className="mt-1 text-sm text-slate-500">Si lo necesitas, agrega información complementaria para evaluar tu solicitud.</p>
-            <textarea className="mt-4 min-h-32 w-full resize-y rounded-xl border border-slate-200 px-3 py-3 text-base text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-[#091581] focus:ring-2 focus:ring-[#091581]/15" id="additional-details" name="additional-details" onChange={(event) => setAdditionalDetails(event.target.value)} placeholder="Escribe aquí información adicional…" value={additionalDetails} />
+            <textarea className="mt-4 min-h-32 w-full resize-y rounded-xl border border-slate-200 px-3 py-3 text-base text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-[#091581] focus:ring-2 focus:ring-[#091581]/15" id="additional-details" maxLength={5000} name="additional-details" onChange={(event) => setAdditionalDetails(event.target.value)} placeholder="Escribe aquí información adicional…" value={additionalDetails} />
           </section>
 
           {error && <p className="rounded-xl bg-red-50 px-4 py-3 text-sm font-medium text-red-700" role="alert">{error}</p>}
