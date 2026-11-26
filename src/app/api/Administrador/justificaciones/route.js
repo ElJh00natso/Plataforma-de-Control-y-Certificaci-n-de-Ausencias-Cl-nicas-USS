@@ -6,6 +6,7 @@ import prisma from "../../../../lib/prisma";
  * Contrato de una solicitud para el frontend.
  * @typedef {Object} JustificacionResumen
  * @property {number} id Identificador de la justificación.
+ * @property {string} redcapId Identificador del registro asociado en REDCap.
  * @property {string} fecha Fecha de registro en formato ISO 8601 (UTC).
  * @property {string} estado Estado almacenado en la base de datos.
  * @property {string} estudiante Nombre completo del estudiante.
@@ -29,7 +30,7 @@ export async function GET() {
       orderBy: [{ fecha: "desc" }, { justificacion_id: "desc" }],
       take: 10,
       select: {
-        justificacion_id: true, fecha: true, estado: true,
+        justificacion_id: true, record_id: true, fecha: true, estado: true,
         estudiante: { select: { nombre: true, apellido: true } },
         horario: { select: { curso: { select: { nombre_curso: true, nrc: true, docente: { select: { nombre: true, apellido: true } } } } } },
       },
@@ -40,6 +41,7 @@ export async function GET() {
     /** @type {JustificacionResumen[]} */
     const resumenes = justificaciones.map((item) => ({
       id: item.justificacion_id,
+      redcapId: item.record_id,
       fecha: item.fecha.toISOString(),
       estado: item.estado,
       estudiante: `${item.estudiante.nombre} ${item.estudiante.apellido}`,

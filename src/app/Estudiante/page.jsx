@@ -2,6 +2,7 @@ import Link from "next/link";
 import TarjetaBienvenida from "../../components/shared/TarjetaBienvenida";
 import { getCurrentSession } from "../../lib/auth/currentSession";
 import ResumenJustificaciones from "../../components/justifications/ResumenJustificaciones";
+import PermisoNotificaciones from "../../components/shared/PermisoNotificaciones";
 
 export default async function EstudiantePage() {
   const sesion = await getCurrentSession();
@@ -13,6 +14,8 @@ export default async function EstudiantePage() {
         apellido={sesion?.apellido}
         descripcion="Presenta tus solicitudes de justificación y consulta el estado de tus inasistencias en actividades clínicas."
       />
+
+      <PermisoNotificaciones />
 
       <section aria-labelledby="student-actions">
         <div className="mb-4">

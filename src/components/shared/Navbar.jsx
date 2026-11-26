@@ -3,9 +3,25 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
 
 export default function Navbar({ homeHref = "/", sections = [], title = "Justificaciones clínicas" }) {
   const pathname = usePathname();
+  const [cerrando, setCerrando] = useState(false);
+  const [error, setError] = useState("");
+
+  async function cerrarSesion() {
+    setCerrando(true);
+    setError("");
+    try {
+      const respuesta = await fetch("/api/usuario/cerrar-sesion", { method: "POST" });
+      if (!respuesta.ok) throw new Error("No se pudo cerrar la sesión.");
+      window.location.assign("/");
+    } catch {
+      setError("No se pudo cerrar la sesión. Inténtalo nuevamente.");
+      setCerrando(false);
+    }
+  }
 
   return (
     <header className="sticky top-0 z-30 border-b border-slate-200 bg-white shadow-sm">
@@ -30,7 +46,10 @@ export default function Navbar({ homeHref = "/", sections = [], title = "Justifi
           })}
         </nav>
 
-        <p className="order-2 shrink-0 text-sm font-medium text-slate-500 md:order-3">{title}</p>
+        <div className="order-2 shrink-0 text-right md:order-3">
+          <button type="button" onClick={cerrarSesion} disabled={cerrando} className="rounded-xl border border-slate-200 px-3 py-2 text-sm font-semibold text-[#091581] transition hover:bg-[#e8eef8] disabled:opacity-60">{cerrando ? "Cerrando…" : "Cerrar sesión"}</button>
+          {error && <p role="alert" className="mt-1 text-xs text-rose-700">{error}</p>}
+        </div>
       </div>
     </header>
   );

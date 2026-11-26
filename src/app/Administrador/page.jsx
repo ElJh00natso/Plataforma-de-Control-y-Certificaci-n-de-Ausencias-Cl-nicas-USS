@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import TarjetaBienvenida from "../../components/shared/TarjetaBienvenida";
 import { getCurrentSession } from "../../lib/auth/currentSession";
+import PermisoNotificaciones from "../../components/shared/PermisoNotificaciones";
 
 export default async function AdministradorPage() {
   const sesion = await getCurrentSession();
@@ -17,6 +18,8 @@ export default async function AdministradorPage() {
         apellido={sesion.apellido}
         descripcion="Bienvenido al espacio de administración de justificaciones clínicas."
       />
+
+      <PermisoNotificaciones />
 
       <section aria-labelledby="admin-actions">
         <div className="mb-4">
